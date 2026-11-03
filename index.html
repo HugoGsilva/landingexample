@@ -1,0 +1,1097 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Break the Cycle</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Break the Cycle: roupas para quem está atravessando a espiral.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: herói em duas colunas com a espiral interativa; seções editoriais numa coluna larga.
+   Visual monocromático de propósito: a página começa no escuro e, quando o visitante quebra o ciclo, a página inteira passa para o claro. */
+:root {
+  --bg: #0b0b0c;
+  --fg: #e7e7e2;
+  --muted: #8f8f8a;
+  --line: #2a2a2e;
+  --surface: #17171a;
+  --invert-bg: #e7e7e2;
+  --invert-fg: #0b0b0c;
+
+  /* cores das peças (são cor de produto, não de tema) */
+  --cloth-black: #121214;
+  --cloth-black-line: #44444a;
+  --cloth-white: #e4e3de;
+  --cloth-white-line: #a3a29c;
+
+  --f-display: "Archivo", "Arial Narrow", Arial, sans-serif;
+  --f-body: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+
+  --s-1: 13px;
+  --s0: 16px;
+  --s1: 19px;
+  --s2: clamp(24px, 3vw, 34px);
+  --s3: clamp(36px, 5.4vw, 64px);
+
+  /* duração da abertura antes do herói entrar */
+  --intro: 2s;
+
+  color-scheme: dark;
+}
+body.is-free {
+  --bg: #e7e7e2;
+  --fg: #0b0b0c;
+  --muted: #5a5a56;
+  --line: #c4c4bd;
+  --surface: #d9d8d2;
+  --invert-bg: #0b0b0c;
+  --invert-fg: #e7e7e2;
+  color-scheme: light;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--f-body);
+  font-size: var(--s0);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 1.4s ease, color 1.4s ease;
+}
+body::before {
+  content: ""; position: fixed; inset: 0 0 auto;
+  height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--bg);
+}
+* { box-sizing: border-box; }
+button, input { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
+a { color: inherit; }
+
+.wrap {
+  max-width: 1240px; margin-inline: auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.eyebrow {
+  font-family: var(--f-mono); font-size: 12px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--muted); margin: 0;
+}
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+h2 {
+  font-family: var(--f-display); font-weight: 900; font-stretch: 70%;
+  font-size: var(--s3); line-height: .92; text-transform: uppercase; letter-spacing: -.005em;
+}
+.fine { font-family: var(--f-mono); font-size: 12px; color: var(--muted); margin: 0; letter-spacing: .02em; }
+
+/* ---------- Topo ---------- */
+.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+  background: color-mix(in srgb, var(--bg) 86%, transparent);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+  transition: background-color 1.4s ease, border-color 1.4s ease;
+}
+.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; height: 62px; }
+.brand {
+  display: flex; align-items: center; gap: 10px; text-decoration: none;
+  font-family: var(--f-display); font-weight: 800; font-stretch: 78%;
+  text-transform: uppercase; letter-spacing: .05em; font-size: 18px; white-space: nowrap;
+}
+.brand svg { width: 30px; height: 30px; flex: none; }
+.links { display: flex; gap: 28px; }
+.links a { color: var(--muted); text-decoration: none; font-size: 15px; }
+.links a:hover { color: var(--fg); }
+.list-btn {
+  display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+  font-family: var(--f-mono); font-size: 13px; letter-spacing: .04em;
+  background: transparent; border: 1px solid var(--fg); padding: 8px 12px; white-space: nowrap;
+}
+.list-btn b {
+  min-width: 22px; height: 22px; display: inline-grid; place-items: center;
+  background: var(--fg); color: var(--bg); font-weight: 500; font-size: 12px;
+}
+@media (max-width: 760px) { .links { display: none; } }
+
+/* ---------- Herói ---------- */
+.hero .wrap {
+  display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  grid-template-areas: "head stage" "body stage";
+  column-gap: clamp(28px, 5vw, 72px); row-gap: 28px;
+  padding-block: clamp(32px, 6vw, 80px);
+}
+.h-head { grid-area: head; align-self: end; display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.h-body { grid-area: body; align-self: start; display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+.stage-col { grid-area: stage; align-self: center; min-width: 0; }
+h1 {
+  font-family: var(--f-display); font-weight: 900; font-stretch: 66%;
+  font-size: clamp(76px, 12.6vw, 178px); line-height: .84; letter-spacing: -.01em;
+  text-transform: uppercase;
+}
+h1 span { display: block; }
+.strike { position: relative; display: inline-block !important; }
+.strike::after {
+  content: ""; position: absolute; left: 0; right: -2%; top: 50%; height: .085em;
+  background: currentColor; transform: scaleX(0); transform-origin: left;
+  transition: transform 1s cubic-bezier(.7, 0, .2, 1) .5s;
+}
+body.is-free .strike::after { transform: scaleX(1); }
+.lede { font-size: var(--s1); color: var(--muted); max-width: 36ch; margin: 0; }
+.lede strong { color: var(--fg); font-weight: 600; }
+
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 24px; }
+.hold {
+  position: relative; overflow: hidden; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 14px;
+  padding: 18px 24px 20px; background: transparent; border: 1.5px solid var(--fg);
+  font-weight: 600; font-size: 17px;
+  user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; touch-action: none;
+  transition: background-color .3s, color .3s;
+}
+.hold .bar {
+  position: absolute; left: 0; bottom: 0; height: 5px; width: 100%;
+  background: var(--fg); transform: scaleX(var(--p, 0)); transform-origin: left;
+}
+.hold .pct { font-family: var(--f-mono); font-size: 13px; font-weight: 400; color: var(--muted); font-variant-numeric: tabular-nums; }
+.hold.is-holding { background: color-mix(in srgb, var(--fg) 8%, transparent); }
+/* pulso que chama para o botão até a primeira interação */
+.hold { animation: pulse 2.4s ease-out calc(var(--intro) + 1.6s) infinite; }
+.hold.touched, .hold[disabled] { animation: none; }
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--fg) 55%, transparent); }
+  70%, 100% { box-shadow: 0 0 0 18px color-mix(in srgb, var(--fg) 0%, transparent); }
+}
+.hold[disabled] { background: var(--fg); color: var(--bg); cursor: default; }
+.hold[disabled] .pct { color: var(--bg); }
+.text-link {
+  background: none; border: 0; padding: 4px 0; cursor: pointer; text-decoration: none;
+  font-weight: 500; border-bottom: 1px solid var(--line);
+}
+.text-link:hover { border-color: var(--fg); }
+.done-msg { margin: 0; max-width: 40ch; font-size: var(--s1); }
+.done-row { display: flex; gap: 22px; flex-wrap: wrap; }
+
+.stage {
+  position: relative; aspect-ratio: 1 / 1; max-width: 100%;
+  border: 1px solid var(--line); overflow: hidden; background: var(--bg);
+}
+.stage canvas {
+  position: absolute; inset: 0; width: 100%; height: 100%; display: block;
+  cursor: pointer; touch-action: none; user-select: none; -webkit-user-select: none;
+}
+.tag {
+  position: absolute; pointer-events: none; padding: 12px 14px;
+  font-family: var(--f-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+.tag.tl { top: 0; left: 0; }
+.tag.tr { top: 0; right: 0; }
+.tag.bl { bottom: 0; left: 0; }
+
+@media (max-width: 860px) {
+  .hero .wrap { grid-template-columns: minmax(0, 1fr); grid-template-areas: "head" "stage" "body"; }
+  .stage { aspect-ratio: 5 / 4; }
+}
+
+/* ---------- Manifesto ---------- */
+.section { padding-block: clamp(64px, 9vw, 128px); border-top: 1px solid var(--line); transition: border-color 1.4s; }
+.split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 3fr); gap: 32px clamp(24px, 4vw, 64px); }
+.mtext { display: flex; flex-direction: column; gap: 28px; min-width: 0; }
+.mtext p {
+  margin: 0; font-family: var(--f-display); font-stretch: 88%; font-weight: 500;
+  font-size: var(--s2); line-height: 1.18; max-width: 30ch; text-wrap: pretty;
+}
+.mtext p b { font-weight: 800; }
+.mtext p .dim { color: var(--muted); }
+.pillars {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px clamp(20px, 3vw, 40px);
+  margin-top: clamp(48px, 6vw, 80px);
+}
+.pillar { border-top: 1.5px solid var(--fg); padding-top: 18px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.pillar h3 { font-family: var(--f-display); font-stretch: 75%; font-weight: 800; text-transform: uppercase; font-size: 22px; letter-spacing: .01em; }
+.pillar p { margin: 0; color: var(--muted); max-width: 38ch; }
+@media (max-width: 860px) {
+  .split { grid-template-columns: minmax(0, 1fr); }
+  .pillars { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ---------- Coleção ---------- */
+.sec-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 24px 40px; margin-bottom: 40px; }
+.sec-head > div { display: flex; flex-direction: column; gap: 16px; min-width: 0; max-width: 680px; }
+.sec-head p.sub { margin: 0; color: var(--muted); max-width: 46ch; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  cursor: pointer; background: transparent; border: 1px solid var(--line);
+  padding: 8px 14px; font-size: 14px; font-weight: 500;
+}
+.chip:hover { border-color: var(--fg); }
+.chip[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(16px, 2vw, 28px); }
+@media (max-width: 960px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 540px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+
+.card { display: flex; flex-direction: column; min-width: 0; }
+.card-media {
+  position: relative; display: grid; place-items: center; cursor: pointer;
+  aspect-ratio: 4 / 5; max-width: 100%; width: 100%;
+  background: var(--surface); border: 0; padding: 0; overflow: hidden;
+  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: background-color 1.4s, transform .45s cubic-bezier(.2, .7, .2, 1);
+}
+.card-media::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .3s;
+  background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--fg) 12%, transparent), transparent 55%);
+}
+.card-media:hover::after { opacity: 1; }
+.card-media .garment { width: 66%; height: auto; transition: transform .5s cubic-bezier(.2, .7, .2, 1); }
+.card-media:hover .garment { transform: translateY(-6px) scale(1.02); }
+.card-media .cat {
+  position: absolute; top: 12px; left: 12px; font-family: var(--f-mono);
+  font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted);
+}
+.card-media .soon {
+  position: absolute; top: 10px; right: 10px; font-family: var(--f-mono); font-size: 11px;
+  letter-spacing: .1em; text-transform: uppercase; padding: 3px 8px; border: 1px solid var(--muted); color: var(--muted);
+}
+.card-body { display: flex; flex-direction: column; gap: 6px; padding-top: 16px; }
+.card-body h3 { font-family: var(--f-display); font-stretch: 78%; font-weight: 800; text-transform: uppercase; font-size: 22px; letter-spacing: .01em; }
+.card-body .spec { margin: 0; font-family: var(--f-mono); font-size: 12.5px; color: var(--muted); }
+.card-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 8px; }
+
+.swatches { display: flex; gap: 8px; }
+.sw {
+  width: 26px; height: 26px; border-radius: 50%; cursor: pointer; padding: 0;
+  border: 1px solid var(--line); outline-offset: 3px; position: relative;
+}
+.sw[data-c="preto"] { background: var(--cloth-black); }
+.sw[data-c="offwhite"] { background: var(--cloth-white); }
+.sw[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--bg), 0 0 0 3.5px var(--fg); }
+
+/* ilustrações das peças */
+.garment { --g: var(--cloth-black); --l: var(--cloth-black-line); --m: var(--cloth-white); overflow: visible; }
+.garment[data-color="offwhite"] { --g: var(--cloth-white); --l: var(--cloth-white-line); --m: var(--cloth-black); }
+.garment .g { fill: var(--g); stroke: var(--l); stroke-width: 1.4; stroke-linejoin: round; transition: fill .35s; }
+.garment .ln { fill: none; stroke: var(--l); stroke-width: 1.4; stroke-linecap: round; }
+.garment .dash { stroke-dasharray: 2 5; stroke-width: 2.2; }
+.garment .hole { fill: var(--surface); stroke: var(--l); stroke-width: 1.4; transition: fill 1.4s; }
+.garment .sole { fill: var(--m); stroke: var(--l); stroke-width: 1.4; transition: fill .35s; }
+.garment .mk { color: var(--m); transition: color .35s; }
+
+/* ---------- Detalhe da peça ---------- */
+dialog {
+  padding: 0; border: 1px solid var(--line); background: var(--bg); color: var(--fg);
+  width: min(940px, calc(100% - 32px)); max-height: calc(100% - 48px); overflow: auto;
+}
+dialog::backdrop { background: rgba(0, 0, 0, .6); backdrop-filter: blur(3px); }
+.dlg-in { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.dlg-media { background: var(--surface); display: grid; place-items: center; padding: 40px; min-height: 360px; }
+.dlg-media .garment { width: 80%; max-width: 340px; height: auto; }
+.dlg-info { position: relative; padding: clamp(24px, 4vw, 40px); display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+.dlg-info h3 { font-family: var(--f-display); font-stretch: 70%; font-weight: 900; text-transform: uppercase; font-size: clamp(32px, 4vw, 44px); line-height: .95; padding-right: 40px; }
+.dlg-info > p.desc { margin: 0; color: var(--muted); }
+.close {
+  position: absolute; top: 14px; right: 14px; width: 40px; height: 40px; cursor: pointer;
+  background: transparent; border: 1px solid var(--line); font-size: 22px; line-height: 1;
+}
+.close:hover { border-color: var(--fg); }
+.specs { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); border-top: 1px solid var(--line); }
+.specs dt, .specs dd { margin: 0; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+.specs dt { font-family: var(--f-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding-right: 24px; align-self: center; }
+fieldset { border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+legend { padding: 0; margin-bottom: 10px; font-family: var(--f-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.opt-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt-row .chip { min-width: 48px; }
+.opt-row .chip .dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; vertical-align: -1px; border: 1px solid var(--line); }
+.cta {
+  cursor: pointer; background: var(--fg); color: var(--bg); border: 1.5px solid var(--fg);
+  padding: 16px 22px; font-weight: 600; font-size: 16px; text-align: center;
+}
+.cta:hover { background: transparent; color: var(--fg); }
+@media (max-width: 760px) {
+  .dlg-in { grid-template-columns: minmax(0, 1fr); }
+  .dlg-media { min-height: 240px; padding: 28px; }
+  .dlg-media .garment { width: 52%; }
+}
+
+/* ---------- Lista de lançamento ---------- */
+.band { background: var(--invert-bg); color: var(--invert-fg); transition: background-color 1.4s, color 1.4s; }
+.band .wrap { padding-block: clamp(64px, 9vw, 120px); }
+.band .eyebrow, .band .fine, .band legend { color: color-mix(in srgb, var(--invert-fg) 62%, var(--invert-bg)); }
+.list-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px clamp(32px, 6vw, 96px); align-items: start; }
+.list-copy { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.list-copy p:not(.eyebrow) { margin: 0; font-size: var(--s1); max-width: 40ch; }
+.form { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.field { display: flex; flex-direction: column; gap: 8px; }
+.field label { font-weight: 600; font-size: 15px; }
+.field input {
+  background: transparent; border: 0; border-bottom: 1.5px solid var(--invert-fg);
+  padding: 10px 0; font-size: 18px; border-radius: 0; color: var(--invert-fg);
+}
+.field input::placeholder { color: color-mix(in srgb, var(--invert-fg) 45%, var(--invert-bg)); }
+.field input:focus { outline: none; border-bottom-width: 3px; padding-bottom: 8.5px; }
+.err { margin: 0; font-size: 14px; font-weight: 600; }
+.band .chip { border-color: color-mix(in srgb, var(--invert-fg) 35%, var(--invert-bg)); }
+.band .chip:hover { border-color: var(--invert-fg); }
+.band .chip[aria-pressed="true"] { background: var(--invert-fg); color: var(--invert-bg); border-color: var(--invert-fg); }
+.band .cta { background: var(--invert-fg); color: var(--invert-bg); border-color: var(--invert-fg); align-self: start; }
+.band .cta:hover { background: transparent; color: var(--invert-fg); }
+.band :focus-visible { outline-color: var(--invert-fg); }
+.ok { display: flex; flex-direction: column; gap: 16px; border-top: 1.5px solid var(--invert-fg); padding-top: 22px; }
+.ok h3 { font-family: var(--f-display); font-stretch: 70%; font-weight: 900; text-transform: uppercase; font-size: var(--s3); line-height: .92; }
+.ok p { margin: 0; font-size: var(--s1); max-width: 40ch; }
+.ok .text-link { align-self: start; border-color: var(--invert-fg); }
+@media (max-width: 860px) { .list-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---------- Apoio ---------- */
+.support .wrap { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 28px clamp(24px, 4vw, 56px); align-items: start; }
+.support svg.big { width: clamp(72px, 9vw, 120px); height: auto; }
+.support h2 { font-size: var(--s2); line-height: 1.05; }
+.sup-body { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.sup-body p { margin: 0; max-width: 60ch; font-size: 17px; }
+.num { font-family: var(--f-mono); font-weight: 500; font-size: 1.1em; padding: 1px 6px; border: 1px solid var(--fg); white-space: nowrap; }
+@media (max-width: 560px) { .support .wrap { grid-template-columns: minmax(0, 1fr); } }
+
+footer .wrap {
+  display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px;
+  padding-block: 28px 36px; border-top: 1px solid var(--line);
+}
+
+/* ---------- Aviso ---------- */
+.toast {
+  position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); z-index: 40;
+  transform: translate(-50%, 20px); opacity: 0; pointer-events: none;
+  background: var(--fg); color: var(--bg); padding: 14px 18px; font-size: 15px; font-weight: 500;
+  max-width: calc(100% - 32px); width: max-content; transition: opacity .3s, transform .3s;
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* ---------- Abertura ---------- */
+.intro {
+  position: fixed; inset: 0; z-index: 50; pointer-events: none;
+  display: grid; place-items: center; background: var(--bg); color: var(--fg);
+  animation: intro-out .9s cubic-bezier(.76, 0, .24, 1) 1.9s forwards;
+}
+.intro-in { display: flex; flex-direction: column; align-items: center; gap: 26px; padding-inline: 16px; }
+.intro svg { width: clamp(96px, 14vw, 150px); height: auto; overflow: visible; }
+.intro ellipse {
+  stroke-dasharray: 100; stroke-dashoffset: 100;
+  animation: draw-ring 1.1s cubic-bezier(.6, 0, .2, 1) var(--d) forwards;
+}
+.intro .fig { opacity: 0; transform: translateY(-5px); animation: fig-in .6s ease-out .75s forwards; }
+.intro .word { display: flex; overflow: hidden; }
+.intro .word span {
+  display: inline-block; transform: translateY(110%);
+  font-family: var(--f-display); font-weight: 900; font-stretch: 66%; text-transform: uppercase;
+  font-size: clamp(26px, 5vw, 50px); line-height: 1.05; letter-spacing: .18em;
+  animation: rise .6s cubic-bezier(.2, .7, .2, 1) calc(.8s + var(--i) * 35ms) forwards;
+}
+@keyframes draw-ring { to { stroke-dashoffset: 9; } }
+@keyframes fig-in { to { opacity: 1; transform: none; } }
+@keyframes intro-out { to { transform: translateY(-100%); visibility: hidden; } }
+
+/* ---------- Entrada do herói ---------- */
+@keyframes rise { from { transform: translateY(110%); } to { transform: none; } }
+@keyframes fade-up { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@keyframes stage-in { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: none; } }
+@keyframes drop-in { from { opacity: 0; transform: translateY(-100%); } to { opacity: 1; transform: none; } }
+.top { animation: drop-in .8s cubic-bezier(.2, .8, .2, 1) calc(var(--intro) - .1s) both; }
+.h1-line { display: block; overflow: hidden; padding-top: .08em; margin-top: -.08em; }
+.h1-line > span { animation: rise .95s cubic-bezier(.2, .8, .2, 1) calc(var(--intro) + .1s + var(--i) * .09s) both; }
+.fade-up { animation: fade-up .8s cubic-bezier(.2, .8, .2, 1) calc(var(--intro) + var(--d, 0s)) both; }
+.enter-stage { animation: stage-in 1.1s cubic-bezier(.2, .8, .2, 1) calc(var(--intro) + .15s) both; }
+#after { animation: fade-up .8s cubic-bezier(.2, .8, .2, 1) .3s both; }
+
+/* ---------- Faixa corrida ---------- */
+.marquee { overflow: hidden; border-top: 1px solid var(--line); padding-block: 22px; transition: border-color 1.4s; }
+.mq-track { display: flex; width: max-content; animation: mq 34s linear infinite; }
+.marquee:hover .mq-track { animation-play-state: paused; }
+.mq-group { display: flex; align-items: center; gap: clamp(20px, 3vw, 40px); padding-right: clamp(20px, 3vw, 40px); }
+.mq-group span {
+  font-family: var(--f-display); font-weight: 900; font-stretch: 66%; text-transform: uppercase;
+  font-size: clamp(34px, 5vw, 64px); line-height: 1; white-space: nowrap;
+}
+.mq-group span.o { color: transparent; -webkit-text-stroke: 1.5px var(--fg); }
+.mq-group svg { width: clamp(30px, 3.4vw, 46px); height: clamp(30px, 3.4vw, 46px); flex: none; }
+@keyframes mq { to { transform: translateX(-50%); } }
+
+/* ---------- Revelação ao rolar ---------- */
+.pre { opacity: 0; transform: translateY(40px); transition: opacity .9s ease, transform 1s cubic-bezier(.2, .8, .2, 1); }
+.pre.in { opacity: 1; transform: none; }
+.mtext b {
+  background: linear-gradient(var(--fg), var(--fg)) left 92% / 0% .07em no-repeat;
+  transition: background-size 1.1s cubic-bezier(.7, 0, .2, 1) .45s;
+}
+.mtext p:not(.pre) b, .mtext p.in b { background-size: 100% .07em; }
+
+/* ---------- Granulado de filme ---------- */
+.grain {
+  position: fixed; inset: 0; z-index: 45; pointer-events: none; opacity: .055;
+  background-image: var(--noise, none);
+  animation: grain 1s steps(1) infinite;
+}
+@keyframes grain {
+  0% { background-position: 0 0; }
+  20% { background-position: -37px 21px; }
+  40% { background-position: 53px -45px; }
+  60% { background-position: -12px 68px; }
+  80% { background-position: 71px 9px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --intro: 0s; }
+  .intro { display: none; }
+  *, *::before, *::after { transition-duration: .01ms !important; animation: none !important; }
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="mark" viewBox="0 0 40 40">
+    <g fill="none" stroke="currentColor">
+      <ellipse cx="20" cy="30.5" rx="6" ry="2.4" stroke-width="1.8" stroke-dasharray="13 6"/>
+      <ellipse cx="20" cy="30.5" rx="11.5" ry="4.6" stroke-width="2.2" stroke-dasharray="26 6 18 6"/>
+      <ellipse cx="20" cy="30.5" rx="17.5" ry="7" stroke-width="2.6" stroke-dasharray="40 7 30 7"/>
+    </g>
+    <circle cx="20" cy="8.6" r="3.4" fill="currentColor"/>
+    <path fill="currentColor" d="M16 12.6 Q20 11 24 12.6 L25.2 21.5 L23 21.5 L22.4 30 L20.7 30 L20 23 L19.3 30 L17.6 30 L17 21.5 L14.8 21.5 Z"/>
+  </symbol>
+</svg>
+
+<div class="intro" aria-hidden="true">
+  <div class="intro-in">
+    <svg viewBox="0 0 40 40">
+      <g fill="none" stroke="currentColor">
+        <ellipse style="--d:.1s" cx="20" cy="30.5" rx="6" ry="2.4" stroke-width="1.8" pathLength="100"/>
+        <ellipse style="--d:.25s" cx="20" cy="30.5" rx="11.5" ry="4.6" stroke-width="2.2" pathLength="100"/>
+        <ellipse style="--d:.4s" cx="20" cy="30.5" rx="17.5" ry="7" stroke-width="2.6" pathLength="100"/>
+      </g>
+      <g class="fig" fill="currentColor">
+        <circle cx="20" cy="8.6" r="3.4"/>
+        <path d="M16 12.6 Q20 11 24 12.6 L25.2 21.5 L23 21.5 L22.4 30 L20.7 30 L20 23 L19.3 30 L17.6 30 L17 21.5 L14.8 21.5 Z"/>
+      </g>
+    </svg>
+    <div class="word">
+      <span style="--i:0">B</span><span style="--i:1">r</span><span style="--i:2">e</span><span style="--i:3">a</span><span style="--i:4">k</span><span style="--i:5">&nbsp;</span><span style="--i:6">t</span><span style="--i:7">h</span><span style="--i:8">e</span><span style="--i:9">&nbsp;</span><span style="--i:10">C</span><span style="--i:11">y</span><span style="--i:12">c</span><span style="--i:13">l</span><span style="--i:14">e</span>
+    </div>
+  </div>
+</div>
+<div class="grain" aria-hidden="true"></div>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#inicio"><svg aria-hidden="true"><use href="#mark"/></svg>Break the Cycle</a>
+    <nav class="links" aria-label="Seções">
+      <a href="#manifesto">Manifesto</a>
+      <a href="#colecao">Coleção</a>
+      <a href="#lista">Lista de lançamento</a>
+    </nav>
+    <button class="list-btn" id="list-btn" type="button">Minha lista <b id="list-count">0</b></button>
+  </div>
+</header>
+
+<main id="inicio">
+  <section class="hero">
+    <div class="wrap">
+      <div class="h-head">
+        <p class="eyebrow fade-up" style="--d:.05s">Drop 00 · em breve</p>
+        <h1><span class="h1-line" style="--i:0"><span>Break</span></span><span class="h1-line" style="--i:1"><span>the</span></span><span class="h1-line" style="--i:2"><span class="strike">Cycle</span></span></h1>
+      </div>
+
+      <div class="stage-col enter-stage">
+        <div class="stage">
+          <canvas id="spiral" aria-label="Uma pessoa no centro de uma espiral. Segure para ajudá-la a sair." role="img"></canvas>
+          <span class="tag tl" id="tag-turns">Espiral · 07 voltas</span>
+          <span class="tag tr" id="tag-state">Segure</span>
+          <span class="tag bl">Toque e segure na espiral</span>
+        </div>
+      </div>
+
+      <div class="h-body">
+        <div id="before" class="h-body fade-up" style="gap:22px;--d:.55s">
+          <p class="lede">Roupas para quem está atravessando a espiral e para quem já encontrou a saída. <strong>Segure o botão e veja o que acontece.</strong></p>
+          <div class="actions">
+            <button class="hold" id="hold" type="button">
+              <span>Segure para quebrar o ciclo</span>
+              <span class="pct" id="pct">0%</span>
+              <span class="bar" aria-hidden="true"></span>
+            </button>
+            <a class="text-link" href="#colecao">Ver a coleção</a>
+          </div>
+          <p class="fine">Leva 3 segundos. Se soltar antes, a espiral volta.</p>
+        </div>
+        <div id="after" class="h-body" style="gap:20px" hidden>
+          <p class="done-msg">Você saiu. Amanhã a espiral pode tentar voltar, e tudo bem. Quebrar o ciclo é um passo de cada vez.</p>
+          <div class="done-row">
+            <a class="cta" href="#colecao">Ver a coleção</a>
+            <button class="text-link" id="reset" type="button">Voltar para a espiral</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="marquee" aria-hidden="true">
+    <div class="mq-track">
+      <div class="mq-group">
+        <span>Break the cycle</span><svg viewBox="0 0 40 40"><use href="#mark"/></svg>
+        <span class="o">Um passo por vez</span><svg viewBox="0 0 40 40"><use href="#mark"/></svg>
+        <span>A saída existe</span><svg viewBox="0 0 40 40"><use href="#mark"/></svg>
+        <span class="o">Drop 00</span><svg viewBox="0 0 40 40"><use href="#mark"/></svg>
+      </div>
+      <div class="mq-group">
+        <span>Break the cycle</span><svg viewBox="0 0 40 40"><use href="#mark"/></svg>
+        <span class="o">Um passo por vez</span><svg viewBox="0 0 40 40"><use href="#mark"/></svg>
+        <span>A saída existe</span><svg viewBox="0 0 40 40"><use href="#mark"/></svg>
+        <span class="o">Drop 00</span><svg viewBox="0 0 40 40"><use href="#mark"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <section class="section" id="manifesto">
+    <div class="wrap">
+      <div class="split">
+        <p class="eyebrow">Manifesto</p>
+        <div class="mtext">
+          <p>A espiral é aquele lugar onde <b>todo dia parece igual.</b> <span class="dim">Você acorda cansado, os pensamentos dão sempre a mesma volta e a saída parece não existir.</span></p>
+          <p>Ninguém quebra o ciclo de uma vez. <b>A gente quebra um passo por vez,</b> <span class="dim">um dia por vez e, quase sempre, com alguém do lado.</span></p>
+          <p>Por isso, toda espiral que a gente desenha <b>tem uma abertura.</b> <span class="dim">Ela está ali para lembrar que a saída existe.</span></p>
+        </div>
+      </div>
+      <div class="pillars">
+        <div class="pillar">
+          <h3>Uma saída em cada peça</h3>
+          <p>A espiral aberta é a nossa assinatura. Ela aparece no peito do moletom, na lateral do tênis e na garrafa.</p>
+        </div>
+        <div class="pillar">
+          <h3>Conversa sem tabu</h3>
+          <p>Todo pedido chega com um cartão com contatos de apoio, como o CVV. Falar de saúde mental faz parte da marca.</p>
+        </div>
+        <div class="pillar">
+          <h3>Pequenas tiragens</h3>
+          <p>Cada drop sai em quantidade limitada. Menos estoque parado e mais cuidado em cada peça.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="colecao">
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <p class="eyebrow">Drop 00 · primeira coleção</p>
+          <h2>Seis peças para o primeiro passo</h2>
+          <p class="sub">Lançamento em breve. Escolha a cor, abra a peça para ver os detalhes e entre na lista para ser avisado.</p>
+        </div>
+        <div class="filters" role="group" aria-label="Filtrar peças" id="filters">
+          <button class="chip" type="button" data-f="Todas" aria-pressed="true">Todas</button>
+          <button class="chip" type="button" data-f="Roupas" aria-pressed="false">Roupas</button>
+          <button class="chip" type="button" data-f="Acessórios" aria-pressed="false">Acessórios</button>
+          <button class="chip" type="button" data-f="Calçados" aria-pressed="false">Calçados</button>
+        </div>
+      </div>
+      <div class="grid" id="grid"></div>
+    </div>
+  </section>
+
+  <section class="band" id="lista">
+    <div class="wrap list-grid">
+      <div class="list-copy">
+        <p class="eyebrow">Lista de lançamento</p>
+        <h2>Seja o primeiro a saber quando o Drop 00 sair</h2>
+        <p>Deixe seu e-mail. A gente avisa uma vez, no dia do lançamento, e você compra antes de todo mundo.</p>
+      </div>
+      <div>
+        <form class="form" id="form" novalidate>
+          <div class="field">
+            <label for="f-name">Seu nome</label>
+            <input id="f-name" name="name" autocomplete="given-name" placeholder="Como podemos te chamar?">
+          </div>
+          <div class="field">
+            <label for="f-email">E-mail</label>
+            <input id="f-email" name="email" type="email" autocomplete="email" placeholder="nome@email.com" aria-describedby="f-err">
+            <p class="err" id="f-err" hidden>Digite um e-mail válido, como nome@email.com.</p>
+          </div>
+          <fieldset>
+            <legend>Quais peças te interessam?</legend>
+            <div class="opt-row" id="f-chips"></div>
+          </fieldset>
+          <button class="cta" type="submit">Entrar na lista</button>        </form>
+        <div class="ok" id="ok" hidden>
+          <h3 id="ok-title">Você está na lista</h3>
+          <p id="ok-text"></p>
+          <button class="text-link" id="ok-again" type="button">Cadastrar outro e-mail</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section support" aria-labelledby="sup-t">
+    <div class="wrap">
+      <svg class="big" viewBox="0 0 40 40" aria-hidden="true"><use href="#mark"/></svg>
+      <div class="sup-body">
+        <h2 id="sup-t">Se hoje estiver pesado, fale com alguém.</h2>
+        <p>O <strong>CVV</strong> atende de graça, 24 horas por dia, pelo telefone <span class="num">188</span> ou pelo chat em <a href="https://cvv.org.br" target="_blank" rel="noopener">cvv.org.br</a>. Em emergência, ligue <span class="num">192</span> (SAMU).</p>      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span class="fine">© 2026 Break the Cycle</span>
+    <span class="fine">Instagram e loja em breve</span>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<dialog id="dlg" aria-labelledby="d-name">
+  <div class="dlg-in">
+    <div class="dlg-media" id="d-media"></div>
+    <div class="dlg-info">
+      <button class="close" id="d-close" type="button" aria-label="Fechar">×</button>
+      <p class="eyebrow" id="d-cat"></p>
+      <h3 id="d-name"></h3>
+      <p class="desc" id="d-desc"></p>
+      <dl class="specs" id="d-specs"></dl>
+      <fieldset>
+        <legend>Cor</legend>
+        <div class="opt-row" id="d-colors"></div>
+      </fieldset>
+      <fieldset>
+        <legend id="d-size-label">Tamanho</legend>
+        <div class="opt-row" id="d-sizes"></div>
+      </fieldset>
+      <button class="cta" id="d-add" type="button">Quero ser avisado no lançamento</button>
+      <p class="fine">Sem compromisso. Você só recebe um e-mail quando a peça sair.</p>
+    </div>
+  </div>
+</dialog>
+
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ================= Espiral interativa ================= */
+  const cv = $('#spiral');
+  const ctx = cv.getContext('2d');
+  const INK = [11, 11, 12], PAPER = [231, 231, 226];
+  const RINGS = 7;
+  const HOLD_SECONDS = 3, DECAY_SECONDS = 1.4;
+  const figBody = new Path2D('M-4 -17.4 Q0 -19 4 -17.4 L5.2 -8.5 L3 -8.5 L2.4 0 L0.7 0 L0 -7 L-0.7 0 L-2.4 0 L-3 -8.5 L-5.2 -8.5 Z');
+
+  let W = 0, H = 0, p = 0, holding = false, done = false, spin = 0, t = 0, last = performance.now(), visible = true;
+  let ox = 0, oy = 0, tx = 0, ty = 0; // deslocamento da espiral seguindo o mouse
+  // os anéis só nascem quando a abertura sobe (mesmo tempo do --intro no CSS)
+  const introStart = performance.now() + (reduced ? -1e5 : 2150);
+
+  const mix = (a, b, k) => a.map((v, i) => Math.round(v + (b[i] - v) * k));
+  const rgba = (c, a = 1) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+  const ease = k => k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+  const easeOutBack = k => 1 + 2.2 * Math.pow(k - 1, 3) + 1.2 * Math.pow(k - 1, 2);
+  const clamp01 = k => Math.min(1, Math.max(0, k));
+
+  function resize() {
+    const r = cv.getBoundingClientRect();
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    W = r.width; H = r.height;
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    draw(ease(p));
+  }
+
+  function drawFigure(x, footY, h, color) {
+    const s = h / 24.4;
+    ctx.save();
+    ctx.translate(x, footY); ctx.scale(s, s);
+    ctx.fillStyle = color;
+    ctx.fill(figBody);
+    ctx.beginPath(); ctx.arc(0, -21.4, 3.4, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  function draw(e) {
+    if (!W) return;
+    const bg = mix(INK, PAPER, e), fg = mix(PAPER, INK, e);
+    ctx.fillStyle = rgba(bg); ctx.fillRect(0, 0, W, H);
+    const m = Math.min(W, H), u = m / 480;
+    const ik = clamp01((performance.now() - introStart) / 1500);
+    const cx = W / 2 + ox, cy = H * 0.62 + oy, base = m * 0.068;
+
+    for (let i = 1; i <= RINGS; i++) {
+      const k = i / RINGS;
+      const rk = clamp01(ik * 1.8 - (i - 1) * 0.11);
+      if (rk <= 0) continue;
+      const rx = Math.max(0.01, base * i * (1 + e * (0.5 + k * 1.3)) * easeOutBack(rk));
+      const ry = rx * 0.4;
+      // os anéis de dentro abrem primeiro: a saída começa perto da pessoa
+      const gap = 0.32 + e * Math.PI * (0.35 + (1 - k) * 0.75);
+      const seg = Math.PI - gap;
+      if (seg <= 0.02) continue;
+      const dir = i % 2 ? 1 : -1;
+      const a0 = i * 1.7 + spin * dir * (0.5 + (1 - k) * 0.9);
+      const alpha = Math.max(0, 1 - e * 1.15) * rk;
+      ctx.strokeStyle = rgba(fg, alpha);
+      ctx.lineWidth = (2.2 + i * 1.7) * u;
+      for (let s = 0; s < 2; s++) {
+        const st = a0 + s * Math.PI;
+        ctx.beginPath(); ctx.ellipse(cx, cy, rx, ry, 0, st, st + seg); ctx.stroke();
+      }
+    }
+
+    const bob = holding && !reduced ? Math.abs(Math.sin(t * 9)) * 3 * u * e : 0;
+    const fk = ease(clamp01(ik * 2 - 0.9));
+    const footY = cy + e * H * 0.24 - bob - (1 - fk) * 40 * u;
+    const fx = W / 2 + ox * 0.4;
+    const fh = m * 0.34 * (1 + e * 0.32);
+    ctx.fillStyle = rgba(fg, (0.14 + e * 0.06) * fk);
+    ctx.beginPath(); ctx.ellipse(fx, footY + 2 * u, fh * 0.2, fh * 0.045, 0, 0, Math.PI * 2); ctx.fill();
+    drawFigure(fx, footY, fh, rgba(fg, fk));
+  }
+
+  const hold = $('#hold'), pct = $('#pct'), tagTurns = $('#tag-turns'), tagState = $('#tag-state');
+  const tags = document.querySelectorAll('.tag');
+  let lastUI = '';
+  function updateUI(e) {
+    const turns = done ? 0 : Math.round(RINGS * (1 - p));
+    const state = done ? 'Saída aberta' : holding ? 'Saindo…' : p > 0 ? 'Não solte' : 'Segure';
+    const key = turns + state + Math.round(p * 100) + (e > .5);
+    if (key === lastUI) return;
+    lastUI = key;
+    tagTurns.textContent = `Espiral · ${String(turns).padStart(2, '0')} ${turns === 1 ? 'volta' : 'voltas'}`;
+    tagState.textContent = state;
+    pct.textContent = `${Math.round(p * 100)}%`;
+    hold.style.setProperty('--p', p.toFixed(3));
+    const c = rgba(mix(PAPER, INK, e), 0.75);
+    tags.forEach(el => el.style.color = c);
+  }
+
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last) / 1000);
+    last = now; t += dt;
+    ox += (tx - ox) * Math.min(1, dt * 4); oy += (ty - oy) * Math.min(1, dt * 4);
+    if (!done) {
+      p = holding ? Math.min(1, p + dt / HOLD_SECONDS) : Math.max(0, p - dt / DECAY_SECONDS);
+      if (p >= 1) complete();
+    }
+    const e = ease(p);
+    spin += (reduced ? 0 : dt * 0.14) + (holding ? dt * (0.5 + 2 * e) : 0);
+    if (visible) draw(e);
+    updateUI(e);
+    requestAnimationFrame(frame);
+  }
+
+  function start() { if (!done) { holding = true; hold.classList.add('is-holding', 'touched'); } }
+  function stop() { holding = false; hold.classList.remove('is-holding'); }
+
+  function complete() {
+    done = true; p = 1; stop();
+    document.body.classList.add('is-free');
+    hold.disabled = true;
+    $('#before').hidden = true; $('#after').hidden = false;
+    toast('Você quebrou o ciclo. Bem-vindo ao lado de fora.');
+  }
+  $('#reset').addEventListener('click', () => {
+    done = false; hold.disabled = false;
+    document.body.classList.remove('is-free');
+    $('#after').hidden = true; $('#before').hidden = false;
+    hold.focus();
+  });
+
+  [hold, cv].forEach(el => {
+    el.addEventListener('pointerdown', ev => {
+      if (ev.button !== 0) return;
+      ev.preventDefault();
+      try { el.setPointerCapture(ev.pointerId); } catch (_) {}
+      start();
+    });
+    ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(n => el.addEventListener(n, stop));
+    el.addEventListener('contextmenu', ev => ev.preventDefault());
+  });
+  hold.addEventListener('keydown', ev => {
+    if ((ev.key === ' ' || ev.key === 'Enter') && !ev.repeat) { ev.preventDefault(); start(); }
+  });
+  hold.addEventListener('keyup', ev => { if (ev.key === ' ' || ev.key === 'Enter') stop(); });
+  hold.addEventListener('blur', stop);
+  cv.addEventListener('pointermove', ev => {
+    if (ev.pointerType !== 'mouse' || reduced) return;
+    const r = cv.getBoundingClientRect();
+    tx = ((ev.clientX - r.left) / r.width - .5) * -28;
+    ty = ((ev.clientY - r.top) / r.height - .5) * -16;
+  });
+  cv.addEventListener('pointerleave', () => { tx = 0; ty = 0; });
+
+  new ResizeObserver(resize).observe(cv);
+  new IntersectionObserver(([en]) => { visible = en.isIntersecting; }).observe(cv);
+  requestAnimationFrame(frame);
+
+  /* ================= Coleção ================= */
+  const ART = {
+    hoodie: `
+      <path class="g" d="M72 62 C74 28 126 28 128 62 L150 70 L172 84 L190 162 L167 169 L152 118 L152 214 L48 214 L48 118 L33 169 L10 162 L28 84 L50 70 Z"/>
+      <path class="ln" d="M76 64 C80 94 120 94 124 64"/>
+      <path class="ln" d="M93 86 L91 122 M107 86 L109 122"/>
+      <path class="ln" d="M68 158 L132 158 L140 196 L60 196 Z"/>
+      <path class="ln" d="M48 204 L152 204"/>
+      <use href="#mark" class="mk" x="84" y="104" width="32" height="32"/>`,
+    tee: `
+      <path class="g" d="M72 38 C82 52 118 52 128 38 L168 56 L192 98 L164 112 L150 92 L150 214 L50 214 L50 92 L36 112 L8 98 L32 56 Z"/>
+      <path class="ln" d="M76 40 C86 58 114 58 124 40"/>
+      <use href="#mark" class="mk" x="72" y="82" width="56" height="56"/>`,
+    joggers: `
+      <path class="g" d="M54 28 L146 28 L150 46 L162 208 L114 212 L102 96 L98 96 L86 212 L38 208 L50 46 Z"/>
+      <path class="ln" d="M50 46 L150 46"/>
+      <path class="ln" d="M95 46 L91 70 M105 46 L109 70"/>
+      <path class="ln" d="M58 56 C64 72 70 80 78 84 M142 56 C136 72 130 80 122 84"/>
+      <path class="ln" d="M41 192 L86 196 M114 196 L159 192"/>
+      <use href="#mark" class="mk" x="58" y="146" width="22" height="22"/>`,
+    balaclava: `
+      <path class="g" d="M100 20 C150 20 168 62 168 110 C168 156 152 192 150 216 L50 216 C48 192 32 156 32 110 C32 62 50 20 100 20 Z"/>
+      <path class="ln dash" d="M44 72 C80 60 120 60 156 72 M36 138 C80 128 120 128 164 138 M38 166 C80 158 120 158 162 166 M46 194 C80 188 120 188 154 194"/>
+      <path class="hole" d="M58 100 C66 84 134 84 142 100 C134 116 66 116 58 100 Z"/>
+      <use href="#mark" class="mk" x="89" y="30" width="22" height="22"/>`,
+    bottle: `
+      <rect class="g" x="84" y="20" width="32" height="28" rx="5"/>
+      <path class="g" d="M86 48 L114 48 L120 64 L80 64 Z"/>
+      <rect class="g" x="68" y="64" width="64" height="154" rx="16"/>
+      <path class="ln" d="M68 92 L132 92 M68 196 L132 196"/>
+      <use href="#mark" class="mk" x="78" y="114" width="44" height="44"/>`,
+    sneaker: `
+      <path class="g" d="M22 168 C22 136 36 118 58 112 L96 106 C108 106 116 122 130 130 L170 144 C186 148 192 158 192 168 L192 174 L22 174 Z"/>
+      <path class="sole" d="M18 174 L196 174 L194 188 C193 194 188 198 182 198 L30 198 C23 198 18 194 18 187 Z"/>
+      <path class="ln" d="M98 112 L112 126 M108 118 L122 132 M118 126 L130 138"/>
+      <path class="ln" d="M58 112 C52 128 52 150 60 168"/>
+      <path class="ln dash" d="M30 164 L186 164"/>
+      <use href="#mark" class="mk" x="134" y="142" width="20" height="20"/>`
+  };
+
+  const PRODUCTS = [
+    { id: 'moletom', name: 'Moletom Espiral', cat: 'Roupas', art: 'hoodie',
+      spec: 'Algodão felpado · 480 g/m²',
+      desc: 'O moletom pesado da coleção. Capuz forrado, bolso canguru e a espiral estampada no peito e nas costas.',
+      specs: [['Material', 'Algodão felpado'], ['Gramatura', '480 g/m²'], ['Modelagem', 'Oversized'], ['Estampa', 'Silk à base d’água']],
+      sizes: ['P', 'M', 'G', 'GG'] },
+    { id: 'camiseta', name: 'Camiseta Saída', cat: 'Roupas', art: 'tee',
+      spec: 'Malha 100% algodão · 220 g/m²',
+      desc: 'A peça mais simples e a mais direta. Corte boxy, gola canelada e a espiral grande no peito.',
+      specs: [['Material', '100% algodão'], ['Gramatura', '220 g/m²'], ['Modelagem', 'Boxy'], ['Gola', 'Ribana de 2 cm']],
+      sizes: ['P', 'M', 'G', 'GG'] },
+    { id: 'calca', name: 'Calça Passo', cat: 'Roupas', art: 'joggers',
+      spec: 'Moletom 420 g/m² · punho canelado',
+      desc: 'Jogger de moletom com cordão, bolsos laterais e a marca pequena na coxa.',
+      specs: [['Material', 'Moletom de algodão'], ['Gramatura', '420 g/m²'], ['Modelagem', 'Jogger'], ['Cós', 'Elástico com cordão']],
+      sizes: ['P', 'M', 'G', 'GG'] },
+    { id: 'balaclava', name: 'Balaclava Abrigo', cat: 'Acessórios', art: 'balaclava',
+      spec: 'Crochê feito à mão · tamanho único',
+      desc: 'Feita à mão, ponto a ponto. Para os dias em que você quer sair de casa, mas ainda não quer ser visto.',
+      specs: [['Material', 'Fio acrílico macio'], ['Técnica', 'Crochê manual'], ['Produção', 'Uma peça por vez'], ['Tamanho', 'Único']],
+      sizes: ['Único'] },
+    { id: 'garrafa', name: 'Garrafa Ciclo', cat: 'Acessórios', art: 'bottle',
+      spec: 'Inox parede dupla · 750 ml',
+      desc: 'Garrafa térmica de inox com a espiral gravada a laser, que não sai com o uso.',
+      specs: [['Material', 'Aço inox'], ['Capacidade', '750 ml'], ['Parede', 'Dupla, térmica'], ['Gravação', 'Laser']],
+      sizes: ['750 ml'] },
+    { id: 'tenis', name: 'Tênis Primeiro Passo', cat: 'Calçados', art: 'sneaker',
+      spec: 'Cabedal sintético · sola de borracha',
+      desc: 'Cano baixo, sola clara e a espiral na lateral. Feito para andar, que é o que importa.',
+      specs: [['Cabedal', 'Couro sintético'], ['Solado', 'Borracha vulcanizada'], ['Palmilha', 'EVA'], ['Numeração', '37 a 44']],
+      sizes: ['37', '38', '39', '40', '41', '42', '43', '44'] }
+  ];
+  const COLORS = { preto: 'Preto', offwhite: 'Off-white' };
+  const state = Object.fromEntries(PRODUCTS.map(pr => [pr.id, { color: 'preto' }]));
+  const interest = new Map(); // id -> { color, size }
+
+  const svg = (pr, color) =>
+    `<svg class="garment" viewBox="0 0 200 240" data-color="${color}" aria-hidden="true">${ART[pr.art]}</svg>`;
+
+  const grid = $('#grid');
+  grid.innerHTML = PRODUCTS.map(pr => `
+    <article class="card" data-id="${pr.id}" data-cat="${pr.cat}">
+      <button class="card-media" type="button" data-open="${pr.id}" aria-label="Ver detalhes: ${pr.name}">
+        ${svg(pr, 'preto')}
+        <span class="cat">${pr.cat}</span>
+        <span class="soon">Em breve</span>
+      </button>
+      <div class="card-body">
+        <h3>${pr.name}</h3>
+        <p class="spec">${pr.spec}</p>
+        <div class="card-row">
+          <div class="swatches" role="group" aria-label="Cor do ${pr.name}">
+            ${Object.entries(COLORS).map(([c, label]) =>
+              `<button class="sw" type="button" data-c="${c}" aria-label="${label}" aria-pressed="${c === 'preto'}"></button>`).join('')}
+          </div>
+          <button class="text-link" type="button" data-open="${pr.id}">Ver peça</button>
+        </div>
+      </div>
+    </article>`).join('');
+
+  function setColor(id, color) {
+    state[id].color = color;
+    const card = grid.querySelector(`[data-id="${id}"]`);
+    card.querySelector('.garment').dataset.color = color;
+    card.querySelectorAll('.sw').forEach(b => b.setAttribute('aria-pressed', b.dataset.c === color));
+  }
+
+  grid.addEventListener('click', ev => {
+    const sw = ev.target.closest('.sw');
+    if (sw) { setColor(sw.closest('.card').dataset.id, sw.dataset.c); return; }
+    const op = ev.target.closest('[data-open]');
+    if (op) openProduct(op.dataset.open);
+  });
+
+  $('#filters').addEventListener('click', ev => {
+    const b = ev.target.closest('.chip'); if (!b) return;
+    const f = b.dataset.f;
+    document.querySelectorAll('#filters .chip').forEach(c => c.setAttribute('aria-pressed', c === b));
+    grid.querySelectorAll('.card').forEach(c => { c.hidden = f !== 'Todas' && c.dataset.cat !== f; });
+  });
+
+  /* ---------- Detalhe ---------- */
+  const dlg = $('#dlg');
+  let current = null, curSize = null;
+
+  function renderDialogOptions() {
+    const pr = current, color = state[pr.id].color;
+    $('#d-media').innerHTML = svg(pr, color);
+    $('#d-colors').innerHTML = Object.entries(COLORS).map(([c, label]) =>
+      `<button class="chip" type="button" data-c="${c}" aria-pressed="${c === color}"><span class="dot" style="background:var(--cloth-${c === 'preto' ? 'black' : 'white'})"></span>${label}</button>`).join('');
+    $('#d-sizes').innerHTML = pr.sizes.map(s =>
+      `<button class="chip" type="button" data-s="${s}" aria-pressed="${s === curSize}">${s}</button>`).join('');
+  }
+
+  function openProduct(id) {
+    current = PRODUCTS.find(pr => pr.id === id);
+    curSize = current.sizes.length === 1 ? current.sizes[0] : (interest.get(id)?.size ?? null);
+    $('#d-cat').textContent = `${current.cat} · Drop 00`;
+    $('#d-name').textContent = current.name;
+    $('#d-desc').textContent = current.desc;
+    $('#d-specs').innerHTML = current.specs.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
+    $('#d-size-label').textContent = current.cat === 'Calçados' ? 'Numeração' : current.id === 'garrafa' ? 'Capacidade' : 'Tamanho';
+    renderDialogOptions();
+    updateAddBtn();
+    dlg.showModal();
+  }
+  function updateAddBtn() {
+    $('#d-add').textContent = interest.has(current.id) ? 'Atualizar na minha lista' : 'Quero ser avisado no lançamento';
+  }
+
+  $('#d-colors').addEventListener('click', ev => {
+    const b = ev.target.closest('[data-c]'); if (!b) return;
+    setColor(current.id, b.dataset.c); renderDialogOptions();
+  });
+  $('#d-sizes').addEventListener('click', ev => {
+    const b = ev.target.closest('[data-s]'); if (!b) return;
+    curSize = b.dataset.s; renderDialogOptions();
+  });
+  $('#d-add').addEventListener('click', () => {
+    const color = state[current.id].color;
+    interest.set(current.id, { color, size: curSize });
+    refreshInterest();
+    dlg.close();
+    const det = [curSize, COLORS[color].toLowerCase()].filter(Boolean).join(', ');
+    toast(`${current.name} (${det}) entrou na sua lista.`);
+  });
+  $('#d-close').addEventListener('click', () => dlg.close());
+  dlg.addEventListener('click', ev => { if (ev.target === dlg) dlg.close(); });
+
+  /* ---------- Lista de interesse + formulário ---------- */
+  const chips = $('#f-chips');
+  chips.innerHTML = PRODUCTS.map(pr =>
+    `<button class="chip" type="button" data-id="${pr.id}" aria-pressed="false">${pr.name}</button>`).join('');
+  chips.addEventListener('click', ev => {
+    const b = ev.target.closest('.chip'); if (!b) return;
+    const id = b.dataset.id;
+    if (interest.has(id)) interest.delete(id);
+    else interest.set(id, { color: state[id].color, size: null });
+    refreshInterest();
+  });
+
+  function refreshInterest() {
+    $('#list-count').textContent = interest.size;
+    chips.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', interest.has(c.dataset.id)));
+  }
+
+  $('#list-btn').addEventListener('click', () => {
+    $('#lista').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' });
+  });
+
+  const form = $('#form'), email = $('#f-email'), err = $('#f-err');
+  form.addEventListener('submit', ev => {
+    ev.preventDefault();
+    const ok = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.value.trim());
+    err.hidden = ok;
+    email.setAttribute('aria-invalid', String(!ok));
+    if (!ok) { email.focus(); return; }
+    const name = $('#f-name').value.trim();
+    const names = PRODUCTS.filter(pr => interest.has(pr.id)).map(pr => pr.name);
+    $('#ok-title').textContent = name ? `Pronto, ${name}` : 'Você está na lista';
+    $('#ok-text').textContent = names.length
+      ? `Vamos avisar ${email.value.trim()} quando ${names.length === 1 ? 'esta peça sair' : 'estas peças saírem'}: ${names.join(', ')}.`
+      : `Vamos avisar ${email.value.trim()} no dia do lançamento do Drop 00.`;
+    form.hidden = true; $('#ok').hidden = false;
+  });
+  email.addEventListener('input', () => { if (!err.hidden) err.hidden = true; });
+  $('#ok-again').addEventListener('click', () => {
+    form.reset(); form.hidden = false; $('#ok').hidden = true; email.focus();
+  });
+
+  /* ---------- Inclinação dos cards ---------- */
+  grid.addEventListener('pointermove', ev => {
+    if (ev.pointerType !== 'mouse' || reduced) return;
+    const media = ev.target.closest('.card-media'); if (!media) return;
+    const r = media.getBoundingClientRect();
+    const x = (ev.clientX - r.left) / r.width, y = (ev.clientY - r.top) / r.height;
+    media.style.setProperty('--rx', `${((0.5 - y) * 9).toFixed(2)}deg`);
+    media.style.setProperty('--ry', `${((x - 0.5) * 11).toFixed(2)}deg`);
+    media.style.setProperty('--mx', `${(x * 100).toFixed(1)}%`);
+    media.style.setProperty('--my', `${(y * 100).toFixed(1)}%`);
+  });
+  grid.addEventListener('pointerout', ev => {
+    const media = ev.target.closest('.card-media');
+    if (!media || media.contains(ev.relatedTarget)) return;
+    ['--rx', '--ry'].forEach(v => media.style.removeProperty(v));
+  });
+
+  /* ---------- Revelação ao rolar (só o que está abaixo da dobra) ---------- */
+  if (!reduced && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver(entries => entries.forEach(en => {
+      if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
+    }), { rootMargin: '0px 0px -8% 0px' });
+    document.querySelectorAll('.mtext p, .pillar, .sec-head, .card, .list-copy, #form, .sup-body, .support svg.big')
+      .forEach(el => {
+        if (el.getBoundingClientRect().top < innerHeight) return;
+        if (el.classList.contains('card')) el.style.transitionDelay = `${([...grid.children].indexOf(el) % 3) * 90}ms`;
+        if (el.classList.contains('pillar')) el.style.transitionDelay = `${[...el.parentNode.children].indexOf(el) * 110}ms`;
+        el.classList.add('pre');
+        io.observe(el);
+      });
+  }
+
+  /* ---------- Granulado ---------- */
+  try {
+    const n = document.createElement('canvas'); n.width = n.height = 160;
+    const nc = n.getContext('2d'), img = nc.createImageData(160, 160);
+    for (let i = 0; i < img.data.length; i += 4) {
+      const v = Math.random() * 255 | 0;
+      img.data[i] = img.data[i + 1] = img.data[i + 2] = v; img.data[i + 3] = 255;
+    }
+    nc.putImageData(img, 0, 0);
+    document.documentElement.style.setProperty('--noise', `url(${n.toDataURL()})`);
+  } catch (_) {}
+
+  /* ---------- Aviso ---------- */
+  const toastEl = $('#toast');
+  let toastTimer;
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove('show'), 3200);
+  }
+})();
+</script>
+
+</html>
