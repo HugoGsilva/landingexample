@@ -21,6 +21,9 @@
   --cloth-black-line: #44444a;
   --cloth-white: #e4e3de;
   --cloth-white-line: #a3a29c;
+  --cloth-mescla: #6d6d6b;
+  --cloth-mescla-line: #9c9c98;
+  --cloth-prata-line: #6e6f73;
 
   --f-display: "Archivo", "Arial Narrow", Arial, sans-serif;
   --f-body: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -261,19 +264,110 @@ body.is-free .strike::after { transform: scaleX(1); }
   width: 26px; height: 26px; border-radius: 50%; cursor: pointer; padding: 0;
   border: 1px solid var(--line); outline-offset: 3px; position: relative;
 }
-.sw[data-c="preto"] { background: var(--cloth-black); }
-.sw[data-c="offwhite"] { background: var(--cloth-white); }
+:is(.sw, .dot)[data-c="preto"] { background: var(--cloth-black); }
+:is(.sw, .dot)[data-c="offwhite"] { background: var(--cloth-white); }
+:is(.sw, .dot)[data-c="mescla"] { background: var(--cloth-mescla); }
+:is(.sw, .dot)[data-c="prata"] { background: linear-gradient(135deg, #f1f1ef, #8f9094 48%, #e2e3e5 70%, #7b7c80); }
 .sw[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--bg), 0 0 0 3.5px var(--fg); }
 
 /* ilustrações das peças */
 .garment { --g: var(--cloth-black); --l: var(--cloth-black-line); --m: var(--cloth-white); overflow: visible; }
 .garment[data-color="offwhite"] { --g: var(--cloth-white); --l: var(--cloth-white-line); --m: var(--cloth-black); }
+.garment[data-color="mescla"] { --g: var(--cloth-mescla); --l: var(--cloth-mescla-line); --m: var(--cloth-white); }
+.garment[data-color="prata"] { --g: url(#silver); --l: var(--cloth-prata-line); --m: var(--cloth-black); }
 .garment .g { fill: var(--g); stroke: var(--l); stroke-width: 1.4; stroke-linejoin: round; transition: fill .35s; }
 .garment .ln { fill: none; stroke: var(--l); stroke-width: 1.4; stroke-linecap: round; }
 .garment .dash { stroke-dasharray: 2 5; stroke-width: 2.2; }
 .garment .hole { fill: var(--surface); stroke: var(--l); stroke-width: 1.4; transition: fill 1.4s; }
 .garment .sole { fill: var(--m); stroke: var(--l); stroke-width: 1.4; transition: fill .35s; }
 .garment .mk { color: var(--m); transition: color .35s; }
+.garment .lens { fill: var(--surface); stroke: var(--l); stroke-width: 1.4; transition: fill 1.4s; }
+
+/* ---------- Arte: Espiral da paz ---------- */
+.art-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(16px, 2vw, 28px); }
+@media (max-width: 960px) { .art-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 460px) { .art-grid { grid-template-columns: minmax(0, 1fr); } }
+.art-card { display: flex; flex-direction: column; min-width: 0; }
+.art-tile {
+  position: relative; aspect-ratio: 1 / 1; overflow: hidden; isolation: isolate;
+  display: grid; place-items: center; background: var(--surface); transition: background-color 1.4s;
+}
+.art-tile .lbl {
+  position: absolute; top: 12px; left: 12px; z-index: 3; font-family: var(--f-mono);
+  font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted);
+}
+.art-tile > svg, .art-tile .obj { width: 64%; height: auto; overflow: visible; }
+.art-body { display: flex; flex-direction: column; gap: 6px; padding-top: 16px; }
+.art-body h3 { font-family: var(--f-display); font-stretch: 78%; font-weight: 800; text-transform: uppercase; font-size: 22px; letter-spacing: .01em; }
+.art-body p { margin: 0; color: var(--muted); font-size: 15px; }
+.art-body .text-link { align-self: start; margin-top: 6px; }
+
+/* 01 · cromo */
+.v-chrome .shine { transform-origin: center; transform-box: fill-box; animation: twinkle 3.2s ease-in-out infinite; }
+.v-chrome .shine.s2 { animation-delay: 1.6s; }
+@keyframes twinkle { 0%, 100% { transform: scale(.2) rotate(0deg); opacity: 0; } 40%, 60% { transform: scale(1) rotate(45deg); opacity: 1; } }
+
+/* 02 · wireframe */
+.wf-floor {
+  position: absolute; left: -60%; right: -60%; bottom: 0; height: 46%; z-index: 0;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--fg) 30%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--fg) 30%, transparent) 1px, transparent 1px);
+  background-size: 26px 26px;
+  transform: perspective(220px) rotateX(55deg); transform-origin: bottom;
+  -webkit-mask-image: linear-gradient(to top, #000 25%, transparent 92%); mask-image: linear-gradient(to top, #000 25%, transparent 92%);
+  animation: floor 1.6s linear infinite;
+}
+@keyframes floor { to { background-position: 0 26px; } }
+.v-wire .obj { position: relative; z-index: 1; aspect-ratio: 1 / 1; perspective: 700px; margin-top: -12%; }
+.wf-rot { position: absolute; inset: 0; transform-style: preserve-3d; animation: wf-spin 7s ease-in-out infinite alternate; }
+.wf-rot svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; --paz-w: 1.3; }
+.wf-rot svg:nth-child(1) { transform: translateZ(-21px); opacity: .25; }
+.wf-rot svg:nth-child(2) { transform: translateZ(-7px); opacity: .45; }
+.wf-rot svg:nth-child(3) { transform: translateZ(7px); opacity: .7; }
+.wf-rot svg:nth-child(4) { transform: translateZ(21px); }
+@keyframes wf-spin { from { transform: rotateX(14deg) rotateY(-42deg); } to { transform: rotateX(4deg) rotateY(42deg); } }
+
+/* 03 · glitch */
+.v-glitch::after {
+  content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  background: repeating-linear-gradient(to bottom, color-mix(in srgb, var(--fg) 7%, transparent) 0 1px, transparent 1px 3px);
+}
+.v-glitch .obj { position: relative; aspect-ratio: 1 / 1; --paz-w: 5; }
+.v-glitch .obj svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.v-glitch .ga { color: var(--muted); animation: glitch-a 2.6s steps(1) infinite; }
+.v-glitch .gb { color: var(--fg); opacity: .4; animation: glitch-b 2.6s steps(1) infinite; }
+.v-glitch .gc { color: var(--fg); animation: glitch-c 2.6s steps(1) infinite; }
+@keyframes glitch-a {
+  0%, 100% { transform: translate(-3px, 0); clip-path: inset(0 0 0 0); }
+  12% { transform: translate(-9px, 2px); clip-path: inset(12% 0 58% 0); }
+  14% { transform: translate(6px, 0); clip-path: inset(62% 0 14% 0); }
+  16%, 70% { transform: translate(-3px, 0); clip-path: inset(0 0 0 0); }
+  72% { transform: translate(-12px, 0); clip-path: inset(40% 0 44% 0); }
+  75% { transform: translate(-3px, 0); clip-path: inset(0 0 0 0); }
+}
+@keyframes glitch-b {
+  0%, 100% { transform: translate(3px, 0); clip-path: inset(0 0 0 0); }
+  13% { transform: translate(11px, -2px); clip-path: inset(30% 0 46% 0); }
+  15%, 71% { transform: translate(3px, 0); clip-path: inset(0 0 0 0); }
+  73% { transform: translate(9px, 0); clip-path: inset(8% 0 80% 0); }
+  76% { transform: translate(3px, 0); clip-path: inset(0 0 0 0); }
+}
+@keyframes glitch-c {
+  0%, 100% { transform: none; clip-path: inset(0 0 0 0); }
+  12% { transform: translate(5px, 0); clip-path: inset(0 0 0 0); }
+  14% { transform: translate(-4px, 0); clip-path: inset(0 0 20% 0); }
+  16%, 72% { transform: none; clip-path: inset(0 0 0 0); }
+  73% { transform: translate(6px, 0); clip-path: inset(0 0 52% 0); }
+  75% { transform: none; clip-path: inset(0 0 0 0); }
+}
+
+/* 04 · ponto (crochê em pixel) */
+.v-pixel svg rect { fill: currentColor; }
+.v-pixel svg rect.alt { opacity: .62; }
+.px-wait:not(.in) .v-pixel svg rect { opacity: 0; }
+.px-wait.in .v-pixel svg rect { animation: stitch .35s steps(2) calc(var(--i) * 45ms) both; }
+@keyframes stitch { from { opacity: 0; transform: translateY(-.6px); } }
 
 /* ---------- Detalhe da peça ---------- */
 dialog {
@@ -353,6 +447,8 @@ footer .wrap {
   display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px;
   padding-block: 28px 36px; border-top: 1px solid var(--line);
 }
+.foot-art { display: inline-flex; align-items: center; gap: 8px; }
+.foot-art svg { width: 18px; height: 18px; --paz-w: 7; }
 
 /* ---------- Aviso ---------- */
 .toast {
@@ -410,6 +506,7 @@ footer .wrap {
 }
 .mq-group span.o { color: transparent; -webkit-text-stroke: 1.5px var(--fg); }
 .mq-group svg { width: clamp(30px, 3.4vw, 46px); height: clamp(30px, 3.4vw, 46px); flex: none; }
+.mq-group svg.pz { --paz-w: 6.5; }
 @keyframes mq { to { transform: translateX(-50%); } }
 
 /* ---------- Revelação ao rolar ---------- */
@@ -452,6 +549,24 @@ footer .wrap {
     <circle cx="20" cy="8.6" r="3.4" fill="currentColor"/>
     <path fill="currentColor" d="M16 12.6 Q20 11 24 12.6 L25.2 21.5 L23 21.5 L22.4 30 L20.7 30 L20 23 L19.3 30 L17.6 30 L17 21.5 L14.8 21.5 Z"/>
   </symbol>
+  <!-- Espiral da paz: o círculo do símbolo da paz não fecha, ele começa na perna direita e vira espiral para dentro -->
+  <symbol id="paz" viewBox="0 0 100 100">
+    <g fill="none" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--paz, currentColor);stroke-width:var(--paz-w, 3.4)">
+      <path d="M82.5 82.5L80.1 84.6L77.6 86.6L74.9 88.3L72.1 89.9L69.2 91.2L66.3 92.4L63.2 93.3L60.2 94L57.1 94.5L53.9 94.8L50.8 94.9L47.7 94.7L44.6 94.4L41.5 93.8L38.5 93L35.5 92L32.7 90.8L29.9 89.4L27.3 87.8L24.8 86L22.4 84.1L20.1 82L18 79.8L16.1 77.4L14.4 75L12.8 72.4L11.4 69.7L10.2 66.9L9.2 64L8.5 61.1L7.9 58.2L7.5 55.2L7.4 52.2L7.4 49.3L7.7 46.3L8.1 43.4L8.8 40.5L9.6 37.7L10.7 34.9L11.9 32.3L13.4 29.7L14.9 27.2L16.7 24.9L18.6 22.7L20.7 20.7L22.8 18.8L25.1 17L27.6 15.4L30.1 14.1L32.7 12.8L35.3 11.8L38.1 11L40.8 10.3L43.6 9.9L46.5 9.7L49.3 9.6L52.1 9.8L54.9 10.1L57.7 10.6L60.4 11.4L63 12.3L65.6 13.4L68 14.6L70.4 16.1L72.7 17.6L74.8 19.4L76.8 21.3L78.7 23.3L80.4 25.4L81.9 27.6L83.3 30L84.6 32.4L85.6 34.9L86.5 37.4L87.2 40L87.7 42.7L88 45.3L88.1 48L88.1 50.7L87.9 53.3L87.4 55.9L86.8 58.5L86.1 61L85.1 63.5L84 65.8L82.7 68.1L81.3 70.3L79.7 72.4L78 74.3L76.2 76.2L74.2 77.8L72.1 79.4L70 80.8L67.7 82L65.4 83.1L63 84L60.6 84.7L58.1 85.3L55.6 85.7L53.1 85.9L50.6 85.9L48.1 85.8L45.6 85.4L43.2 84.9L40.8 84.3L38.5 83.5L36.2 82.5L34 81.4L31.9 80.1L29.9 78.7L28 77.1L26.3 75.5L24.6 73.7L23.1 71.8L21.7 69.8L20.5 67.7L19.4 65.6L18.5 63.4L17.8 61.1L17.2 58.8L16.7 56.5L16.5 54.1L16.3 51.8L16.4 49.4L16.6 47.1L17 44.8L17.6 42.5L18.3 40.3L19.1 38.1L20.1 36.1L21.2 34L22.5 32.1L23.9 30.3L25.4 28.6L27 27L28.7 25.5L30.6 24.2L32.5 23L34.4 21.9L36.5 21L38.6 20.2L40.7 19.6L42.9 19.1L45.1 18.8L47.3 18.6L49.5 18.6L51.6 18.7L53.8 19L55.9 19.5L58 20.1L60.1 20.8L62 21.6L63.9 22.6L65.8 23.8L67.5 25L69.1 26.4L70.7 27.8L72.1 29.4L73.4 31.1L74.6 32.8L75.6 34.6L76.6 36.5L77.3 38.4L78 40.4L78.5 42.4L78.9 44.4L79.1 46.4L79.2 48.5L79.1 50.5L78.9 52.5L78.5 54.5L78.1 56.5L77.4 58.4L76.7 60.2L75.8 62L74.8 63.8L73.7 65.4L72.5 67L71.2 68.4L69.8 69.8L68.3 71.1L66.7 72.2L65.1 73.2L63.4 74.1L61.6 74.9L59.8 75.6L58 76.1L56.1 76.5L54.2 76.8L52.4 76.9L50.5 76.9L48.6 76.8L46.7 76.5L44.9 76.1L43.1 75.6L41.4 75L39.7 74.2L38.1 73.3"/>
+      <path d="M50 9.6L50 94.9M50 50L19.1 80.9M50 50L82.5 82.5"/>
+    </g>
+  </symbol>
+  <!-- cromo (é material da arte, não cor de tema) -->
+  <linearGradient id="chrome" gradientUnits="userSpaceOnUse" x1="20" y1="0" x2="80" y2="100">
+    <stop offset="0" stop-color="#fbfbf8"/><stop offset=".34" stop-color="#a4a4a0"/><stop offset=".49" stop-color="#2a2a2d"/>
+    <stop offset=".55" stop-color="#e9e9e5"/><stop offset=".8" stop-color="#77777a"/><stop offset="1" stop-color="#f4f4f0"/>
+  </linearGradient>
+  <linearGradient id="chrome-a" href="#chrome" gradientUnits="userSpaceOnUse" x1="20" y1="0" x2="80" y2="100" spreadMethod="reflect">
+    <animateTransform attributeName="gradientTransform" type="translate" values="0 -40; 0 40; 0 -40" dur="6s" repeatCount="indefinite"/>
+  </linearGradient>
+  <linearGradient id="silver" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#f1f1ef"/><stop offset=".45" stop-color="#9c9da1"/><stop offset=".7" stop-color="#e4e5e7"/><stop offset="1" stop-color="#7d7e82"/>
+  </linearGradient>
 </svg>
 
 <div class="intro" aria-hidden="true">
@@ -479,6 +594,7 @@ footer .wrap {
     <a class="brand" href="#inicio"><svg aria-hidden="true"><use href="#mark"/></svg>Break the Cycle</a>
     <nav class="links" aria-label="Seções">
       <a href="#manifesto">Manifesto</a>
+      <a href="#arte">Arte</a>
       <a href="#colecao">Coleção</a>
       <a href="#lista">Lista de lançamento</a>
     </nav>
@@ -531,15 +647,15 @@ footer .wrap {
     <div class="mq-track">
       <div class="mq-group">
         <span>Break the cycle</span><svg viewBox="0 0 40 40"><use href="#mark"/></svg>
-        <span class="o">Um passo por vez</span><svg viewBox="0 0 40 40"><use href="#mark"/></svg>
+        <span class="o">Um passo por vez</span><svg class="pz" viewBox="0 0 100 100"><use href="#paz"/></svg>
         <span>A saída existe</span><svg viewBox="0 0 40 40"><use href="#mark"/></svg>
-        <span class="o">Drop 00</span><svg viewBox="0 0 40 40"><use href="#mark"/></svg>
+        <span class="o">Drop 00</span><svg class="pz" viewBox="0 0 100 100"><use href="#paz"/></svg>
       </div>
       <div class="mq-group">
         <span>Break the cycle</span><svg viewBox="0 0 40 40"><use href="#mark"/></svg>
-        <span class="o">Um passo por vez</span><svg viewBox="0 0 40 40"><use href="#mark"/></svg>
+        <span class="o">Um passo por vez</span><svg class="pz" viewBox="0 0 100 100"><use href="#paz"/></svg>
         <span>A saída existe</span><svg viewBox="0 0 40 40"><use href="#mark"/></svg>
-        <span class="o">Drop 00</span><svg viewBox="0 0 40 40"><use href="#mark"/></svg>
+        <span class="o">Drop 00</span><svg class="pz" viewBox="0 0 100 100"><use href="#paz"/></svg>
       </div>
     </div>
   </div>
@@ -571,12 +687,87 @@ footer .wrap {
     </div>
   </section>
 
+  <section class="section" id="arte">
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <p class="eyebrow">Arte autoral · cyber 2k</p>
+          <h2>Espiral da paz</h2>
+          <p class="sub">O símbolo da paz desenhado com a nossa espiral: o círculo não fecha, ele começa numa das pernas e vira caminho para dentro. Quatro versões, feitas para estampar.</p>
+        </div>
+      </div>
+      <div class="art-grid" id="art-grid">
+        <article class="art-card">
+          <div class="art-tile v-chrome">
+            <span class="lbl">01</span>
+            <svg viewBox="-8 -8 116 116" aria-hidden="true">
+              <use href="#paz" transform="translate(1.2 1.6)" style="--paz-w:7.5;color:color-mix(in srgb, var(--bg) 70%, transparent)"/>
+              <use href="#paz" style="--paz:url(#chrome-a);--paz-w:7.5"/>
+              <path class="shine" fill="var(--fg)" d="M86 8 L88 15 L95 17 L88 19 L86 26 L84 19 L77 17 L84 15 Z"/>
+              <path class="shine s2" fill="var(--fg)" d="M12 70 L13.3 74.7 L18 76 L13.3 77.3 L12 82 L10.7 77.3 L6 76 L10.7 74.7 Z"/>
+            </svg>
+          </div>
+          <div class="art-body">
+            <h3>Cromo</h3>
+            <p>Metal líquido, brilho de capa de CD.</p>
+            <button class="text-link" type="button" data-art="capinha:cromo">Ver na capinha</button>
+          </div>
+        </article>
+        <article class="art-card">
+          <div class="art-tile v-wire">
+            <span class="lbl">02</span>
+            <div class="wf-floor" aria-hidden="true"></div>
+            <div class="obj" aria-hidden="true">
+              <div class="wf-rot">
+                <svg viewBox="0 0 100 100"><use href="#paz"/></svg>
+                <svg viewBox="0 0 100 100"><use href="#paz"/></svg>
+                <svg viewBox="0 0 100 100"><use href="#paz"/></svg>
+                <svg viewBox="0 0 100 100"><use href="#paz"/></svg>
+              </div>
+            </div>
+          </div>
+          <div class="art-body">
+            <h3>Wireframe</h3>
+            <p>Modelo 3D de computador antigo, girando no vazio.</p>
+            <button class="text-link" type="button" data-art="capinha:wire">Ver na capinha</button>
+          </div>
+        </article>
+        <article class="art-card">
+          <div class="art-tile v-glitch">
+            <span class="lbl">03</span>
+            <div class="obj" aria-hidden="true">
+              <svg class="ga" viewBox="0 0 100 100"><use href="#paz"/></svg>
+              <svg class="gb" viewBox="0 0 100 100"><use href="#paz"/></svg>
+              <svg class="gc" viewBox="0 0 100 100"><use href="#paz"/></svg>
+            </div>
+          </div>
+          <div class="art-body">
+            <h3>Glitch</h3>
+            <p>O sinal falha, treme e volta. Igual à gente.</p>
+            <button class="text-link" type="button" data-art="capinha:glitch">Ver na capinha</button>
+          </div>
+        </article>
+        <article class="art-card">
+          <div class="art-tile v-pixel">
+            <span class="lbl">04</span>
+            <svg id="px-art" viewBox="0 0 30 30" aria-hidden="true"></svg>
+          </div>
+          <div class="art-body">
+            <h3>Ponto</h3>
+            <p>Cada ponto do crochê é um pixel. Bordado na balaclava.</p>
+            <button class="text-link" type="button" data-art="balaclava:espiralpaz">Ver na balaclava</button>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
   <section class="section" id="colecao">
     <div class="wrap">
       <div class="sec-head">
         <div>
           <p class="eyebrow">Drop 00 · primeira coleção</p>
-          <h2>Seis peças para o primeiro passo</h2>
+          <h2>Sete peças para o primeiro passo</h2>
           <p class="sub">Lançamento em breve. Escolha a cor, abra a peça para ver os detalhes e entre na lista para ser avisado.</p>
         </div>
         <div class="filters" role="group" aria-label="Filtrar peças" id="filters">
@@ -635,6 +826,7 @@ footer .wrap {
 <footer>
   <div class="wrap">
     <span class="fine">© 2026 Break the Cycle</span>
+    <span class="fine foot-art"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#paz"/></svg>Arte: Espiral da paz</span>
     <span class="fine">Instagram e loja em breve</span>
   </div>
 </footer>
@@ -653,6 +845,10 @@ footer .wrap {
       <fieldset>
         <legend>Cor</legend>
         <div class="opt-row" id="d-colors"></div>
+      </fieldset>
+      <fieldset id="d-var-set" hidden>
+        <legend id="d-var-label"></legend>
+        <div class="opt-row" id="d-vars"></div>
       </fieldset>
       <fieldset>
         <legend id="d-size-label">Tamanho</legend>
@@ -842,11 +1038,37 @@ footer .wrap {
       <path class="ln" d="M58 56 C64 72 70 80 78 84 M142 56 C136 72 130 80 122 84"/>
       <path class="ln" d="M41 192 L86 196 M114 196 L159 192"/>
       <use href="#mark" class="mk" x="58" y="146" width="22" height="22"/>`,
-    balaclava: `
+    balaclava: v => `
       <path class="g" d="M100 20 C150 20 168 62 168 110 C168 156 152 192 150 216 L50 216 C48 192 32 156 32 110 C32 62 50 20 100 20 Z"/>
       <path class="ln dash" d="M44 72 C80 60 120 60 156 72 M36 138 C80 128 120 128 164 138 M38 166 C80 158 120 158 162 166 M46 194 C80 188 120 188 154 194"/>
       <path class="hole" d="M58 100 C66 84 134 84 142 100 C134 116 66 116 58 100 Z"/>
-      <use href="#mark" class="mk" x="89" y="30" width="22" height="22"/>`,
+      ${{
+        espiral: `<use href="#mark" class="mk" x="87" y="28" width="26" height="26"/>`,
+        paz: `<g class="mk" transform="translate(87 31) scale(.26)" fill="none" stroke="currentColor" stroke-width="9"><circle cx="50" cy="50" r="44"/><path d="M50 6V94M50 50L18.9 81.1M50 50L81.1 81.1"/></g>`,
+        espiralpaz: `<use href="#paz" class="mk" x="86" y="30" width="28" height="28" style="--paz-w:8"/>`
+      }[v]}`,
+    // capinha: a estampa é a arte Espiral da paz, nas versões da seção Arte
+    capinha: v => `
+      <rect class="g" x="54" y="10" width="92" height="220" rx="20"/>
+      <rect class="ln" x="62" y="20" width="38" height="46" rx="11"/>
+      <circle class="lens" cx="74" cy="33" r="7"/><circle class="lens" cx="74" cy="53" r="7"/><circle class="lens" cx="89" cy="43" r="4"/>
+      ${{
+        cromo: `
+          <use href="#paz" x="68.2" y="107.6" width="66" height="66" style="--paz-w:7;color:rgba(0,0,0,.45)"/>
+          <use href="#paz" x="67" y="106" width="66" height="66" style="--paz:url(#chrome);--paz-w:7"/>`,
+        wire: `
+          <g class="mk" fill="none" stroke="currentColor" stroke-width="1" opacity=".45">
+            <path d="M62 194H138M60 203H140M58 214H142M58 226H142M100 188V228M90 188L80 228M110 188L120 228M80 188L60 226M120 188L140 226"/>
+          </g>
+          <use href="#paz" class="mk" x="73" y="100" width="66" height="66" opacity=".3" style="--paz-w:1.6"/>
+          <use href="#paz" class="mk" x="70" y="103" width="66" height="66" opacity=".6" style="--paz-w:1.6"/>
+          <use href="#paz" class="mk" x="67" y="106" width="66" height="66" style="--paz-w:1.6"/>`,
+        glitch: `
+          <use href="#paz" class="mk" x="62" y="106" width="66" height="66" opacity=".35" style="--paz-w:6"/>
+          <use href="#paz" class="mk" x="67" y="106" width="66" height="66" style="--paz-w:6"/>
+          <svg x="60" y="128" width="80" height="9" overflow="hidden"><rect width="80" height="9" style="fill:var(--g)"/><use href="#paz" class="mk" x="16" y="-22" width="66" height="66" style="--paz-w:6"/></svg>
+          <svg x="60" y="152" width="80" height="5" overflow="hidden"><rect width="80" height="5" style="fill:var(--g)"/><use href="#paz" class="mk" x="-1" y="-46" width="66" height="66" style="--paz-w:6"/></svg>`
+      }[v]}`,
     bottle: `
       <rect class="g" x="84" y="20" width="32" height="28" rx="5"/>
       <path class="g" d="M86 48 L114 48 L120 64 L80 64 Z"/>
@@ -879,33 +1101,50 @@ footer .wrap {
       specs: [['Material', 'Moletom de algodão'], ['Gramatura', '420 g/m²'], ['Modelagem', 'Jogger'], ['Cós', 'Elástico com cordão']],
       sizes: ['P', 'M', 'G', 'GG'] },
     { id: 'balaclava', name: 'Balaclava Abrigo', cat: 'Acessórios', art: 'balaclava',
-      spec: 'Crochê feito à mão · tamanho único',
-      desc: 'Feita à mão, ponto a ponto. Para os dias em que você quer sair de casa, mas ainda não quer ser visto.',
-      specs: [['Material', 'Fio acrílico macio'], ['Técnica', 'Crochê manual'], ['Produção', 'Uma peça por vez'], ['Tamanho', 'Único']],
+      spec: 'Crochê feito à mão · personalizável',
+      desc: 'Feita à mão, ponto a ponto, do seu jeito: você escolhe a cor do fio e o símbolo bordado na testa. Para os dias em que você quer sair de casa, mas ainda não quer ser visto.',
+      specs: [['Material', 'Fio acrílico macio ou lurex prata'], ['Técnica', 'Crochê manual'], ['Personalização', 'Cor do fio e símbolo bordado'], ['Produção', 'Sob encomenda, uma por vez'], ['Tamanho', 'Único']],
+      colors: ['preto', 'offwhite', 'mescla', 'prata'],
+      variant: { label: 'Símbolo bordado', def: 'espiralpaz',
+        options: [['espiralpaz', 'Espiral da paz'], ['espiral', 'Espiral'], ['paz', 'Paz']] },
       sizes: ['Único'] },
+    { id: 'capinha', name: 'Capinha Sinal', cat: 'Acessórios', art: 'capinha',
+      spec: 'TPU com costas rígidas · impressão UV',
+      desc: 'A arte Espiral da paz numa capinha que aguenta queda. Escolha uma das três versões da estampa e o modelo do seu celular.',
+      specs: [['Material', 'TPU flexível, costas rígidas'], ['Impressão', 'UV, não descasca'], ['Proteção', 'Borda elevada na câmera e na tela'], ['Arte', 'Espiral da paz, autoral']],
+      variant: { label: 'Estampa', def: 'cromo',
+        options: [['cromo', 'Cromo'], ['wire', 'Wireframe'], ['glitch', 'Glitch']] },
+      sizeLabel: 'Modelo',
+      sizes: ['iPhone 12', 'iPhone 13', 'iPhone 14', 'iPhone 15', 'iPhone 16', 'Galaxy S23', 'Galaxy S24', 'Moto G'] },
     { id: 'garrafa', name: 'Garrafa Ciclo', cat: 'Acessórios', art: 'bottle',
       spec: 'Inox parede dupla · 750 ml',
       desc: 'Garrafa térmica de inox com a espiral gravada a laser, que não sai com o uso.',
+      sizeLabel: 'Capacidade',
       specs: [['Material', 'Aço inox'], ['Capacidade', '750 ml'], ['Parede', 'Dupla, térmica'], ['Gravação', 'Laser']],
       sizes: ['750 ml'] },
     { id: 'tenis', name: 'Tênis Primeiro Passo', cat: 'Calçados', art: 'sneaker',
       spec: 'Cabedal sintético · sola de borracha',
       desc: 'Cano baixo, sola clara e a espiral na lateral. Feito para andar, que é o que importa.',
+      sizeLabel: 'Numeração',
       specs: [['Cabedal', 'Couro sintético'], ['Solado', 'Borracha vulcanizada'], ['Palmilha', 'EVA'], ['Numeração', '37 a 44']],
       sizes: ['37', '38', '39', '40', '41', '42', '43', '44'] }
   ];
-  const COLORS = { preto: 'Preto', offwhite: 'Off-white' };
-  const state = Object.fromEntries(PRODUCTS.map(pr => [pr.id, { color: 'preto' }]));
-  const interest = new Map(); // id -> { color, size }
+  const COLORS = { preto: 'Preto', offwhite: 'Off-white', mescla: 'Cinza mescla', prata: 'Prata lurex' };
+  PRODUCTS.forEach(pr => { pr.colors ??= ['preto', 'offwhite']; pr.sizeLabel ??= 'Tamanho'; });
+  const state = Object.fromEntries(PRODUCTS.map(pr => [pr.id, { color: 'preto', variant: pr.variant?.def }]));
+  const interest = new Map(); // id -> { color, size, variant }
+  const variantName = (pr, v) => pr.variant?.options.find(([k]) => k === v)?.[1];
 
-  const svg = (pr, color) =>
-    `<svg class="garment" viewBox="0 0 200 240" data-color="${color}" aria-hidden="true">${ART[pr.art]}</svg>`;
+  const svg = pr => {
+    const { color, variant } = state[pr.id], art = ART[pr.art];
+    return `<svg class="garment" viewBox="0 0 200 240" data-color="${color}" aria-hidden="true">${typeof art === 'function' ? art(variant) : art}</svg>`;
+  };
 
   const grid = $('#grid');
   grid.innerHTML = PRODUCTS.map(pr => `
     <article class="card" data-id="${pr.id}" data-cat="${pr.cat}">
       <button class="card-media" type="button" data-open="${pr.id}" aria-label="Ver detalhes: ${pr.name}">
-        ${svg(pr, 'preto')}
+        ${svg(pr)}
         <span class="cat">${pr.cat}</span>
         <span class="soon">Em breve</span>
       </button>
@@ -914,8 +1153,8 @@ footer .wrap {
         <p class="spec">${pr.spec}</p>
         <div class="card-row">
           <div class="swatches" role="group" aria-label="Cor do ${pr.name}">
-            ${Object.entries(COLORS).map(([c, label]) =>
-              `<button class="sw" type="button" data-c="${c}" aria-label="${label}" aria-pressed="${c === 'preto'}"></button>`).join('')}
+            ${pr.colors.map(c =>
+              `<button class="sw" type="button" data-c="${c}" aria-label="${COLORS[c]}" aria-pressed="${c === 'preto'}"></button>`).join('')}
           </div>
           <button class="text-link" type="button" data-open="${pr.id}">Ver peça</button>
         </div>
@@ -927,6 +1166,10 @@ footer .wrap {
     const card = grid.querySelector(`[data-id="${id}"]`);
     card.querySelector('.garment').dataset.color = color;
     card.querySelectorAll('.sw').forEach(b => b.setAttribute('aria-pressed', b.dataset.c === color));
+  }
+  function setVariant(id, variant) {
+    state[id].variant = variant;
+    grid.querySelector(`[data-id="${id}"] .garment`).outerHTML = svg(PRODUCTS.find(pr => pr.id === id));
   }
 
   grid.addEventListener('click', ev => {
@@ -948,10 +1191,16 @@ footer .wrap {
   let current = null, curSize = null;
 
   function renderDialogOptions() {
-    const pr = current, color = state[pr.id].color;
-    $('#d-media').innerHTML = svg(pr, color);
-    $('#d-colors').innerHTML = Object.entries(COLORS).map(([c, label]) =>
-      `<button class="chip" type="button" data-c="${c}" aria-pressed="${c === color}"><span class="dot" style="background:var(--cloth-${c === 'preto' ? 'black' : 'white'})"></span>${label}</button>`).join('');
+    const pr = current, { color, variant } = state[pr.id];
+    $('#d-media').innerHTML = svg(pr);
+    $('#d-colors').innerHTML = pr.colors.map(c =>
+      `<button class="chip" type="button" data-c="${c}" aria-pressed="${c === color}"><span class="dot" data-c="${c}"></span>${COLORS[c]}</button>`).join('');
+    $('#d-var-set').hidden = !pr.variant;
+    if (pr.variant) {
+      $('#d-var-label').textContent = pr.variant.label;
+      $('#d-vars').innerHTML = pr.variant.options.map(([v, label]) =>
+        `<button class="chip" type="button" data-v="${v}" aria-pressed="${v === variant}">${label}</button>`).join('');
+    }
     $('#d-sizes').innerHTML = pr.sizes.map(s =>
       `<button class="chip" type="button" data-s="${s}" aria-pressed="${s === curSize}">${s}</button>`).join('');
   }
@@ -963,7 +1212,7 @@ footer .wrap {
     $('#d-name').textContent = current.name;
     $('#d-desc').textContent = current.desc;
     $('#d-specs').innerHTML = current.specs.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
-    $('#d-size-label').textContent = current.cat === 'Calçados' ? 'Numeração' : current.id === 'garrafa' ? 'Capacidade' : 'Tamanho';
+    $('#d-size-label').textContent = current.sizeLabel;
     renderDialogOptions();
     updateAddBtn();
     dlg.showModal();
@@ -976,16 +1225,20 @@ footer .wrap {
     const b = ev.target.closest('[data-c]'); if (!b) return;
     setColor(current.id, b.dataset.c); renderDialogOptions();
   });
+  $('#d-vars').addEventListener('click', ev => {
+    const b = ev.target.closest('[data-v]'); if (!b) return;
+    setVariant(current.id, b.dataset.v); renderDialogOptions();
+  });
   $('#d-sizes').addEventListener('click', ev => {
     const b = ev.target.closest('[data-s]'); if (!b) return;
     curSize = b.dataset.s; renderDialogOptions();
   });
   $('#d-add').addEventListener('click', () => {
-    const color = state[current.id].color;
-    interest.set(current.id, { color, size: curSize });
+    const { color, variant } = state[current.id];
+    interest.set(current.id, { color, size: curSize, variant });
     refreshInterest();
     dlg.close();
-    const det = [curSize, COLORS[color].toLowerCase()].filter(Boolean).join(', ');
+    const det = [curSize, COLORS[color].toLowerCase(), variantName(current, variant)?.toLowerCase()].filter(Boolean).join(', ');
     toast(`${current.name} (${det}) entrou na sua lista.`);
   });
   $('#d-close').addEventListener('click', () => dlg.close());
@@ -999,7 +1252,7 @@ footer .wrap {
     const b = ev.target.closest('.chip'); if (!b) return;
     const id = b.dataset.id;
     if (interest.has(id)) interest.delete(id);
-    else interest.set(id, { color: state[id].color, size: null });
+    else interest.set(id, { color: state[id].color, size: null, variant: state[id].variant });
     refreshInterest();
   });
 
@@ -1049,15 +1302,49 @@ footer .wrap {
     ['--rx', '--ry'].forEach(v => media.style.removeProperty(v));
   });
 
+  /* ================= Arte: Espiral da paz ================= */
+  $('#art-grid').addEventListener('click', ev => {
+    const b = ev.target.closest('[data-art]'); if (!b) return;
+    const [id, v] = b.dataset.art.split(':');
+    setVariant(id, v);
+    openProduct(id);
+  });
+  if (reduced) document.querySelectorAll('animateTransform').forEach(a => a.remove());
+
+  // 04 · ponto: o símbolo rasterizado numa grade 30×30, cada célula vira um ponto de crochê
+  const pxArt = $('#px-art');
+  try {
+    const N = 30, c = document.createElement('canvas'); c.width = c.height = N;
+    const pc = c.getContext('2d');
+    pc.scale(N / 100, N / 100);
+    pc.lineWidth = 5.4; pc.lineCap = pc.lineJoin = 'round';
+    document.querySelectorAll('#paz path').forEach(pth => pc.stroke(new Path2D(pth.getAttribute('d'))));
+    const a = pc.getImageData(0, 0, N, N).data;
+    let cells = '';
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++)
+      if (a[(y * N + x) * 4 + 3] > 90)
+        cells += `<rect${(x + y) % 2 ? ' class="alt"' : ''} x="${x + .09}" y="${y + .09}" width=".82" height=".82" rx=".2" style="--i:${y}"/>`;
+    pxArt.innerHTML = cells;
+  } catch (_) {}
+  if (!reduced && 'IntersectionObserver' in window) {
+    const card = pxArt.closest('.art-card');
+    card.classList.add('px-wait');
+    const io = new IntersectionObserver(([en]) => {
+      if (en.isIntersecting) { card.classList.add('in'); io.disconnect(); }
+    }, { threshold: .4 });
+    io.observe(card);
+  }
+
   /* ---------- Revelação ao rolar (só o que está abaixo da dobra) ---------- */
   if (!reduced && 'IntersectionObserver' in window) {
     const io = new IntersectionObserver(entries => entries.forEach(en => {
       if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
     }), { rootMargin: '0px 0px -8% 0px' });
-    document.querySelectorAll('.mtext p, .pillar, .sec-head, .card, .list-copy, #form, .sup-body, .support svg.big')
+    document.querySelectorAll('.mtext p, .pillar, .sec-head, .card, .art-card, .list-copy, #form, .sup-body, .support svg.big')
       .forEach(el => {
         if (el.getBoundingClientRect().top < innerHeight) return;
         if (el.classList.contains('card')) el.style.transitionDelay = `${([...grid.children].indexOf(el) % 3) * 90}ms`;
+        if (el.classList.contains('art-card')) el.style.transitionDelay = `${[...el.parentNode.children].indexOf(el) * 90}ms`;
         if (el.classList.contains('pillar')) el.style.transitionDelay = `${[...el.parentNode.children].indexOf(el) * 110}ms`;
         el.classList.add('pre');
         io.observe(el);
